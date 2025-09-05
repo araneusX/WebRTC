@@ -4,15 +4,15 @@
     "editor.formatOnPaste": true,
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "always",
-        "source.organizeImports": "always"
+        "source.fixAll.eslint": "explicit",
+        "source.organizeImports": "explicit"
     },
     "eslint.validate": ["javascript", "javascriptreact", "typescriptreact", "typescript", "svelte", "css"],
     "typescript.preferences.organizeImports": true,
     "javascript.preferences.organizeImports": true,
     "editor.insertSpaces": true,
     "editor.tabSize": 4,
-    "[css]": {
-        "editor.defaultFormatter": "vscode.css-language-features"
+    "[svelte]": {
+        "editor.defaultFormatter": "svelte.svelte-vscode"
     }
 }

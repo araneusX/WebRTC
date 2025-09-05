@@ -1,5 +1,7 @@
-import css from "@eslint/css";
+import css from '@eslint/css';
 import js from '@eslint/js';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import eslintPluginPrettier from 'eslint-plugin-prettier/recommended';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import ts from 'typescript-eslint';
@@ -9,14 +11,17 @@ export default ts.config(
     js.configs.recommended,
     ...ts.configs.recommended,
     ...svelte.configs.recommended,
+    ...svelte.configs.prettier,
+    eslintConfigPrettier,
+    eslintPluginPrettier,
     css.configs.recommended,
     {
         languageOptions: {
             globals: {
                 ...globals.browser,
-                ...globals.node
-            }
-        }
+                ...globals.node,
+            },
+        },
     },
     {
         files: ['**/*.svelte', '**/*.svelte.ts'],
@@ -26,15 +31,13 @@ export default ts.config(
                 projectService: true,
                 extraFileExtensions: ['.svelte'],
                 parser: ts.parser,
-                svelteConfig
-            }
-        }
+                svelteConfig,
+            },
+        },
     },
     {
         rules: {
-            indent: ['error', 4],
             'no-multi-spaces': 'error',
-            'svelte/indent': ['error', { indent: 4 }],
             'svelte/no-trailing-spaces': 'error',
             'svelte/derived-has-same-inputs-outputs': 'error',
             'svelte/first-attribute-linebreak': 'error',
@@ -42,7 +45,6 @@ export default ts.config(
             'svelte/html-closing-bracket-spacing': 'error',
             'svelte/html-quotes': 'error',
             'svelte/html-self-closing': 'error',
-            'svelte/max-attributes-per-line': 'error',
             'svelte/mustache-spacing': 'error',
             'svelte/no-extra-reactive-curlies': 'error',
             'svelte/no-spaces-around-equal-signs-in-attribute': 'error',
@@ -52,7 +54,8 @@ export default ts.config(
             'svelte/shorthand-attribute': 'error',
             'svelte/shorthand-directive': 'error',
             'svelte/sort-attributes': 'error',
-            'svelte/spaced-html-comment': 'error'
-        }
-    }
+            'svelte/spaced-html-comment': 'error',
+            'prettier/arrow-parens': 'always',
+        },
+    },
 );
