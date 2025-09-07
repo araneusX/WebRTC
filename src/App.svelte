@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { InteractiveField } from './lib';
+    import { Hedgehog, InteractiveField } from './lib';
 
     type ConnectionMessages = {
         offer?: RTCSessionDescriptionInit;
@@ -18,42 +18,51 @@
         ],
     };
 
-    let dataChannel: RTCDataChannel | null = $state(null);
     const peerConnection = new RTCPeerConnection(configuration);
-    peerConnection.createDataChannel('data-channel');
+    let role: 'offer' | 'answer' | undefined = $state();
 
-    peerConnection.addEventListener('datachannel', (event) => {
-        dataChannel = event.channel;
+    let dataChannel: RTCDataChannel | null = null;
 
-        // dataChannel.addEventListener('message', (event) => {
-        //   chat.addValue(event.data)
-        // });
-
-        // chat.addInputHandler((message) => {
-        //   dataChannel.send(message);
-        // });
-
-        // dataChannel.addEventListener('open', event => {
-        //   chat.setName('Chat/Connected')
-        // });
-    });
-
-    peerConnection.createOffer().then(async (offer) => {
-        await peerConnection.setLocalDescription(offer);
-
-        peerConnection.addEventListener('icecandidate', (event) => {
-            console.log('event', event);
-
-            if (event.candidate) {
-                myMessages.icecandidate.push(event.candidate);
-            }
-        });
-        myMessages.offer = offer;
+    peerConnection.addEventListener('icecandidate', (event) => {
+        if (event.candidate) {
+            myMessages.icecandidate.push(event.candidate);
+        }
     });
 
     $effect(() => {
+        if (role === 'offer') {
+            dataChannel = peerConnection.createDataChannel('data-channel');
+
+            dataChannel.addEventListener('message', (event) => {
+                hedgehogPosition = JSON.parse(event.data);
+            });
+
+            peerConnection.createOffer().then(async (offer) => {
+                await peerConnection.setLocalDescription(offer);
+
+                myMessages.offer = offer;
+            });
+        } else if (role === 'answer') {
+            peerConnection.addEventListener('datachannel', (event) => {
+                dataChannel = event.channel;
+
+                dataChannel.addEventListener('message', (event) => {
+                    hedgehogPosition = JSON.parse(event.data);
+                });
+            });
+        }
+    });
+
+    document.addEventListener('mousemove', (event) => {
+        if (dataChannel?.readyState === 'open') {
+            dataChannel.send(JSON.stringify({ x: event.clientX, y: event.clientY }));
+        }
+    });
+
+    let hedgehogPosition = $state({ x: 100, y: 100 });
+
+    $effect(() => {
         if (incomingMessages.offer) {
-            console.log('incomingMessages.offer', incomingMessages.offer);
             peerConnection.setRemoteDescription(new RTCSessionDescription(incomingMessages.offer));
 
             peerConnection.createAnswer().then(async (answer) => {
@@ -65,13 +74,20 @@
 
     $effect(() => {
         if (incomingMessages.answer) {
-            console.log('incomingMessages.answer', incomingMessages.answer);
             peerConnection.setRemoteDescription(new RTCSessionDescription(incomingMessages.answer));
         }
     });
 
     $effect(() => {
+        const latestIceCandidate = incomingMessages.icecandidate.at(-1);
+        if (latestIceCandidate) {
+            peerConnection.addIceCandidate(latestIceCandidate);
+        }
+    });
+
+    $effect(() => {
         return () => {
+            dataChannel?.close();
             peerConnection.close();
         };
     });
@@ -79,16 +95,17 @@
 
 <main>
     <div class="section-row">
-        {#if !incomingMessages.offer}
+        <label><input type="radio" bind:group={role} value="offer" readOnly={!!role} />Offer</label>
+        <label><input type="radio" bind:group={role} value="answer" readOnly={!!role} />Answer</label>
+    </div>
+    <div class="section-row">
+        {#if role === 'offer'}
             <InteractiveField data={myMessages.offer} name="My Offer" />
-        {/if}
-        {#if !incomingMessages.answer}
-            <div>
-                <InteractiveField bind:data={incomingMessages.offer} name="Incoming Offer" />
-                {#if !incomingMessages.offer}
-                    <InteractiveField bind:data={incomingMessages.answer} name="Incoming Answer" />
-                {/if}
-            </div>
+            {#if !incomingMessages.answer}
+                <InteractiveField bind:data={incomingMessages.answer} name="Incoming Answer" />
+            {/if}
+        {:else if role === 'answer'}
+            <InteractiveField bind:data={incomingMessages.offer} name="Incoming Offer" />
         {/if}
     </div>
     <div class="section-row">
@@ -120,6 +137,9 @@
             </div>
         </div>
     {/if}
+    <div class="forest">
+        <Hedgehog color="blue" x={hedgehogPosition.x} y={hedgehogPosition.y} />
+    </div>
 </main>
 
 <style>
@@ -148,5 +168,14 @@
         flex-direction: column;
         gap: 1rem;
         align-self: stretch;
+    }
+
+    .forest {
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
     }
 </style>
