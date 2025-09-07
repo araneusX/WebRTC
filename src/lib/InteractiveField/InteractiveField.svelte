@@ -5,6 +5,7 @@
     import { parseInput } from './utils';
 
     let { data: propData = $bindable(), name }: { data?: object | null; name: string } = $props();
+    const uid = $props.id();
 
     enum ActivityState {
         Error = 'error',
@@ -54,12 +55,15 @@
     style:--background={`var(--background-${activityState})`}
     class="container"
 >
-    <textarea class="field" bind:value readonly={activityState === ActivityState.Completed} {name}></textarea>
-    {#if value && !isCopy}
-        <button in:fade={{ duration: 1000 }} out:fly={{ y: -10, x: 10 }} class="copy" onclick={handleCopy}
-            ><CopyIcon /></button
-        >
-    {/if}
+    <label class="label" for={uid}>{name}</label>
+    <div class="wrapper">
+        <textarea class="field" bind:value readonly={activityState === ActivityState.Completed} id={uid}></textarea>
+        {#if value && !isCopy}
+            <button in:fade={{ duration: 1000 }} out:fly={{ y: -10, x: 10 }} class="copy" onclick={handleCopy}
+                ><CopyIcon /></button
+            >
+        {/if}
+    </div>
 </div>
 
 <style>
@@ -78,10 +82,15 @@
         --background-waiting: oklch(100% 0.05 105);
         --background-processing: oklch(100% 0 270);
         --background-completed: oklch(100% 0.05 140);
+    }
 
+    .label {
+        font-size: 1.2rem;
+        color: var(--text);
+    }
+
+    .wrapper {
         position: relative;
-        width: 100%;
-        height: 100%;
     }
 
     .field {
@@ -90,10 +99,9 @@
         border-radius: 0.25rem;
         border: 2px solid var(--border);
         width: 100%;
-        height: 100%;
-        max-width: 100%;
-        max-height: 100%;
-        resize: none;
+        min-height: 150px;
+        max-height: 300px;
+        resize: vertical;
     }
 
     .field:focus {
