@@ -11,5 +11,5 @@
     "isolatedModules": true,
     "moduleDetection": "force"
   },
-  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "src/assets/svelte.svg"],
+  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "src/assets/svelte.svg", "src/assets/Hedgehog.svg"],
 }

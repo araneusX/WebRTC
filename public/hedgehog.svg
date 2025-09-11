@@ -1,24 +1,4 @@
-<script lang="ts">
-    const {
-        color = 'currentColor',
-        x = '0%',
-        y = '0%',
-        rotation = 0,
-    }: { color: string; x: string; y: string; rotation: number } = $props();
-</script>
-
-<svg
-    version="1.1"
-    xmlns="http://www.w3.org/2000/svg"
-    width="64"
-    height="64"
-    viewBox="0 0 64 64"
-    style:left={x}
-    style:top={y}
-    style:transform={`rotate(${rotation}rad)`}
-    style:color
-    class="hedgehog"
->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
     <path
         stroke="currentColor"
         d="M32.2,0c1.4,0.5,2.6,3.7,3.2,4.9c4.5-3.4,5.1-5.4,6.6,1.2c2,0,4-2.9,5.3-2.4C48.5,4,47.7,9,47.7,9.8
@@ -57,10 +37,3 @@
         d="M31.2,47.4c-5.7,4.9-5.3,2.9-3,11.1c2.9,0,4.3-2,7.2,0.2c0.3-0.9,2.2-5.8,2-6.9C37.2,50.9,32.8,46,31.2,47.4z"
     />
 </svg>
-
-<style>
-    .hedgehog {
-        position: absolute;
-        transition: transform;
-    }
-</style>

@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { Hedgehog, InteractiveField } from './lib';
+    import { InteractiveField } from './lib';
+    import { movement, prepareAsset } from './lib/movement';
 
     type ConnectionMessages = {
         offer?: RTCSessionDescriptionInit;
@@ -22,6 +23,8 @@
     let role: 'offer' | 'answer' | undefined = $state();
 
     let dataChannel: RTCDataChannel | null = null;
+
+    let canvas = $state<HTMLCanvasElement>();
 
     peerConnection.addEventListener('icecandidate', (event) => {
         if (event.candidate) {
@@ -59,7 +62,7 @@
         }
     });
 
-    let hedgehogPosition = $state({ x: 100, y: 100 });
+    let hedgehogPosition = $state({ x: 5, y: 5, rotation: 0 });
 
     $effect(() => {
         if (incomingMessages.offer) {
@@ -82,6 +85,50 @@
         const latestIceCandidate = incomingMessages.icecandidate.at(-1);
         if (latestIceCandidate) {
             peerConnection.addIceCandidate(latestIceCandidate);
+        }
+    });
+
+    $effect(() => {
+        if (canvas) {
+            const resize = () => {
+                if (canvas) {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                }
+            };
+
+            window.addEventListener('resize', resize);
+            resize();
+            const context = canvas.getContext('2d');
+            const image = prepareAsset({ color: 'blue' });
+
+            let timeout: ReturnType<typeof setTimeout>;
+
+            image.then((image) => {
+                if (context) {
+                    const render = () => {
+                        if (canvas) {
+                            const point = movement.getNextPoint();
+                            context.clearRect(0, 0, canvas.width, canvas.height);
+                            context.save();
+                            context.translate(point.x + 28, point.y + 28);
+                            context.rotate(point.rotation);
+                            context.translate(-28, -28);
+                            context.drawImage(image, 0, 0);
+                            context.restore();
+                        }
+
+                        timeout = setTimeout(() => requestAnimationFrame(render), 18);
+                    };
+
+                    render();
+                }
+            });
+
+            return () => {
+                clearTimeout(timeout);
+                window.removeEventListener('resize', resize);
+            };
         }
     });
 
@@ -138,7 +185,13 @@
         </div>
     {/if}
     <div class="forest">
-        <Hedgehog color="blue" x={hedgehogPosition.x} y={hedgehogPosition.y} />
+        <!-- <Hedgehog
+            color="blue"
+            x="{hedgehogPosition.x}%"
+            y="{hedgehogPosition.y}%"
+            rotation={hedgehogPosition.rotation}
+        /> -->
+        <canvas bind:this={canvas}></canvas>
     </div>
 </main>
 
